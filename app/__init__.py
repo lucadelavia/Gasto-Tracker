@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, render_template, redirect, url_for, request, flash
 from flask_cors import CORS
-from app.configuracion import Config
-from app.base_datos import probar_conexion
-from app.servicios.gastos import listar_gastos, crear_gasto, obtener_gasto, editar_gasto, borrar_gasto as borrar_gasto_servicio
+from app.config.configuracion import Config
+from app.config.base_datos import probar_conexion
+from app.servicios.gastos import listar_gastos, crear_gasto, obtener_gasto, editar_gasto, borrar_gasto as borrar_gasto_servicio, estadisticas_por_categoria
 from datetime import datetime
 
 def crear_app():
@@ -23,7 +23,8 @@ def crear_app():
     @app.route('/')
     def index():
         gastos = listar_gastos()
-        return render_template('index.html', gastos=gastos)
+        estadisticas = estadisticas_por_categoria()
+        return render_template('index.html', gastos=gastos, estadisticas=estadisticas)
 
     @app.route('/nuevo', methods=['GET', 'POST'])
     def nuevo_gasto():

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.servicios.gastos import listar_gastos as listar_gastos_servicio, crear_gasto as crear_gasto_servicio, obtener_gasto as obtener_gasto_servicio, editar_gasto as editar_gasto_servicio, borrar_gasto as borrar_gasto_servicio
 from app.modelos.gasto import Gasto, crear_gasto_desde_json
-from app.configuracion import Config
+from app.config.configuracion import Config
 from bson import ObjectId
 from bson.errors import InvalidId
 from datetime import datetime
@@ -16,13 +16,7 @@ gastos_bp = Blueprint('gastos', __name__)
 @gastos_bp.route('/gastos', methods=['GET'])
 def listar_gastos():
     try:
-        pagina = int(request.args.get('pagina', 1))
-        limite = int(request.args.get('limite', Config.GASTOS_POR_PAGINA))
-        categoria = request.args.get('categoria')
-        fecha_desde = request.args.get('fecha_desde')
-        fecha_hasta = request.args.get('fecha_hasta')
-        # Filtros y paginación pueden implementarse en servicios si se desea
-        gastos = listar_gastos_servicio()  # Por simplicidad, sin paginación avanzada
+        gastos = listar_gastos_servicio() 
         return jsonify({'gastos': gastos})
     except Exception as e:
         return jsonify({'error': 'Error interno del servidor', 'detalle': str(e)}), 500
