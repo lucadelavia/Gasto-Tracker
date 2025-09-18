@@ -1,110 +1,123 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template, redirect, url_for, request, flash
 from flask_cors import CORS
 from app.configuracion import Config
-from app.base_datos import probar_conexion
+from app.base_datos import probar_conexion, obtener_coleccion_gastos
+from app.modelos.gasto import Gasto
+from bson import ObjectId
+from datetime import datetime
 
 def crear_app():
-    
     app = Flask(__name__)
     print("Creando aplicacion Flask")
-    
     app.config.from_object(Config)
     print("Configuracion cargada")
-    
     CORS(app, origins=app.config['CORS_ORIGINS'])
     print("CORS habilitado")
-
     if probar_conexion():
         print("Conexion a MongoDB exitosa")
     else:
         print("Advertencia: No se pudo conectar a MongoDB")
-
     from app.rutas.gastos import gastos_bp
     app.register_blueprint(gastos_bp, url_prefix='/api')
     print("📋 Rutas de gastos registradas")
-    
+
     @app.route('/')
-    def pagina_inicio():
-        """
-        Ruta principal de la API
-        Devuelve información básica sobre la aplicación
-        """
-        return jsonify({
-            'aplicacion': Config.APP_NAME,
-            'version': Config.API_VERSION,
-            'mensaje': '¡Bienvenido a Gasto Track API!',
-            'documentacion': {
-                'endpoints_principales': {
-                    'listar_gastos': 'GET /api/gastos',
-                    'crear_gasto': 'POST /api/gastos',
-                    'obtener_gasto': 'GET /api/gastos/{id}',
-                    'actualizar_gasto': 'PUT /api/gastos/{id}',
-                    'eliminar_gasto': 'DELETE /api/gastos/{id}',
-                    'estadisticas': 'GET /api/gastos/estadisticas',
-                    'categorias': 'GET /api/categorias'
-                },
-                'ejemplo_gasto': {
-                    'descripcion': 'Almuerzo en restaurante',
-                    'monto': 25.50,
-                    'categoria': 'Alimentación',
-                    'fecha': '2025-01-15'
+    def index():
+        coleccion = obtener_coleccion_gastos()
+        gastos = []
+        if coleccion is not None:
+            cursor = coleccion.find().sort('fecha', -1)
+            for gasto in cursor:
+                gastos.append(Gasto.formatear_para_respuesta(gasto))
+        return render_template('index.html', gastos=gastos)
+
+    @app.route('/nuevo', methods=['GET', 'POST'])
+    def nuevo_gasto():
+        categorias = Config.CATEGORIAS_PERMITIDAS
+        if request.method == 'POST':
+            descripcion = request.form.get('descripcion')
+            monto = request.form.get('monto')
+            fecha = request.form.get('fecha')
+            if not fecha or fecha.strip() == '':
+                fecha = datetime.now().strftime('%d-%m-%Y')
+            categoria = request.form.get('categoria')
+            origen = request.form.get('origen')
+            if not descripcion or not monto or not categoria or not origen:
+                flash('Todos los campos son obligatorios', 'danger')
+                return redirect(url_for('nuevo_gasto'))
+            if categoria not in categorias:
+                flash('Categoría inválida', 'danger')
+                return redirect(url_for('nuevo_gasto'))
+            try:
+                gasto = {
+                    'descripcion': descripcion,
+                    'monto': float(monto),
+                    'categoria': categoria,
+                    'origen': origen,
+                    'fecha': fecha if fecha else None
                 }
-            },
-            'estado': 'API funcionando correctamente'
-        })
-    
-    @app.route('/health')
-    def health_check():
-        return jsonify({
-            'estado': 'saludable',
-            'timestamp': Config.obtener_timestamp_actual(),
-            'version': Config.API_VERSION
-        }), 200
-    
-    @app.errorhandler(404)
-    def no_encontrado(error):
-        return jsonify({
-            'error': 'Endpoint no encontrado',
-            'mensaje': 'La ruta solicitada no existe en esta API',
-            'sugerencia': 'Revisa la documentación en GET /'
-        }), 404
-    
-    @app.errorhandler(405)
-    def metodo_no_permitido(error):
-        return jsonify({
-            'error': 'Método HTTP no permitido',
-            'mensaje': 'El endpoint existe pero no acepta este método HTTP',
-            'sugerencia': 'Verifica si debes usar GET, POST, PUT o DELETE'
-        }), 405
-    
-    @app.errorhandler(500)
-    def error_interno(error):
-        return jsonify({
-            'error': 'Error interno del servidor',
-            'mensaje': 'Ocurrió un error inesperado',
-            'sugerencia': 'Contacta al administrador si el problema persiste'
-        }), 500
-    
-    @app.errorhandler(400)
-    def solicitud_incorrecta(error):
-        return jsonify({
-            'error': 'Solicitud incorrecta',
-            'mensaje': 'Los datos enviados no son válidos',
-            'sugerencia': 'Revisa el formato JSON y los campos requeridos'
-        }), 400
-    
-    
-    @app.before_request
-    def antes_de_cada_request():
-        pass 
-    
-    @app.after_request
-    def despues_de_cada_request(response):
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        return response
-    
+                coleccion = obtener_coleccion_gastos()
+                if coleccion is not None:
+                    coleccion.insert_one(gasto)
+                flash('Gasto agregado exitosamente', 'success')
+                return redirect(url_for('index'))
+            except Exception as e:
+                flash(f'Error: {str(e)}', 'danger')
+                return redirect(url_for('nuevo_gasto'))
+        return render_template('nuevo.html', categorias=categorias)
+
+    @app.route('/editar/<gasto_id>', methods=['GET', 'POST'])
+    def editar_gasto(gasto_id):
+        categorias = Config.CATEGORIAS_PERMITIDAS
+        coleccion = obtener_coleccion_gastos()
+        gasto = None
+        if coleccion is not None:
+            gasto_db = coleccion.find_one({'_id': ObjectId(gasto_id)})
+            if gasto_db:
+                gasto = Gasto.formatear_para_respuesta(gasto_db)
+        if request.method == 'POST':
+            descripcion = request.form.get('descripcion')
+            monto = request.form.get('monto')
+            fecha = request.form.get('fecha')
+            categoria = request.form.get('categoria')
+            origen = request.form.get('origen')
+            if not descripcion or not monto or not categoria or not origen:
+                flash('Todos los campos son obligatorios', 'danger')
+                return redirect(url_for('editar_gasto', gasto_id=gasto_id))
+            if categoria not in categorias:
+                flash('Categoría inválida', 'danger')
+                return redirect(url_for('editar_gasto', gasto_id=gasto_id))
+            try:
+                datos_actualizados = {
+                    'descripcion': descripcion,
+                    'monto': float(monto),
+                    'categoria': categoria,
+                    'origen': origen,
+                    'fecha': fecha if fecha else None,
+                    'fecha_actualizacion': datetime.now()
+                }
+                coleccion.update_one({'_id': ObjectId(gasto_id)}, {'$set': datos_actualizados})
+                flash('Gasto editado exitosamente', 'success')
+                return redirect(url_for('index'))
+            except Exception as e:
+                flash(f'Error: {str(e)}', 'danger')
+                return redirect(url_for('editar_gasto', gasto_id=gasto_id))
+        return render_template('nuevo.html', categorias=categorias, gasto=gasto, editar=True)
+
+    @app.route('/borrar/<gasto_id>', methods=['POST'])
+    def borrar_gasto(gasto_id):
+        coleccion = obtener_coleccion_gastos()
+        if coleccion is not None:
+            resultado = coleccion.delete_one({'_id': ObjectId(gasto_id)})
+            if resultado.deleted_count:
+                flash('Gasto eliminado exitosamente', 'success')
+            else:
+                flash('No se pudo eliminar el gasto', 'danger')
+        else:
+            flash('No se pudo conectar a la base de datos', 'danger')
+        return redirect(url_for('index'))
+
     print("Aplicación Flask creada exitosamente")
-    
     return app
 
 def obtener_info_app():

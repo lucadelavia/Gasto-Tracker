@@ -1,0 +1,58 @@
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
+
+.navbar {
+    background: #6366f1;
+}
+
+.navbar-brand, .nav-link, .navbar-text {
+    color: #fff !important;
+}
+
+.card {
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+    border-radius: 1rem;
+}
+
+.table {
+    background: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: #6366f1;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+}
+
+.btn-success {
+    background: #22c55e;
+    border: none;
+}
+
+.btn-success:hover {
+    background: #16a34a;
+}
+
+.btn-secondary {
+    background: #64748b;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #334155;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 0.5rem;
+}
