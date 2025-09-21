@@ -15,7 +15,7 @@ if __name__ == '__main__':
     host = os.getenv('HOST', getattr(Config, 'HOST', '0.0.0.0'))
     debug_mode = os.getenv('DEBUG', 'True').lower() == 'true'
 
-    print("Iniciando Gasto Track API")
+    print("Iniciando Gasto Tracker API")
     print(f"Servidor ejecutándose en: http://{host}:{puerto}")
 
     app.run(

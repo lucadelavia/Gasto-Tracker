@@ -18,7 +18,7 @@ def crear_app():
         print("Advertencia: No se pudo conectar a MongoDB")
     from app.rutas.gastos import gastos_bp
     app.register_blueprint(gastos_bp, url_prefix='/api')
-    print("📋 Rutas de gastos registradas")
+    print("Rutas de gastos registradas")
 
     @app.route('/')
     def index():
@@ -97,6 +97,44 @@ def crear_app():
                 flash(f'Error: {str(e)}', 'danger')
                 return redirect(url_for('editar_gasto_view', gasto_id=gasto_id))
         return render_template('nuevo.html', categorias=categorias, gasto=gasto, editar=True)
+
+    @app.route('/editar', methods=['POST'])
+    def editar_gasto_modal():
+        gasto_id = request.form.get('gasto_id')
+        descripcion = request.form.get('descripcion')
+        monto = request.form.get('monto')
+        fecha = request.form.get('fecha')
+        categoria = request.form.get('categoria')
+        origen = request.form.get('origen')
+        
+        categorias = Config.CATEGORIAS_PERMITIDAS
+        
+        if not descripcion or not monto or not categoria or not origen:
+            flash('Todos los campos son obligatorios', 'danger')
+            return redirect(url_for('index'))
+        
+        if categoria not in categorias:
+            flash('Categoría inválida', 'danger')
+            return redirect(url_for('index'))
+        
+        try:
+            datos_actualizados = {
+                'descripcion': descripcion,
+                'monto': float(monto),
+                'categoria': categoria,
+                'origen': origen,
+                'fecha': fecha if fecha else None,
+                'fecha_actualizacion': datetime.now()
+            }
+            exito = editar_gasto(gasto_id, datos_actualizados)
+            if exito:
+                flash('Gasto editado exitosamente', 'success')
+            else:
+                flash('No se pudo editar el gasto', 'danger')
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'danger')
+        
+        return redirect(url_for('index'))
 
     @app.route('/borrar/<gasto_id>', methods=['POST'])
     def borrar_gasto_view(gasto_id):
