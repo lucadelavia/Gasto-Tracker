@@ -1,4 +1,4 @@
-﻿# 💰 Gasto Tracker
+# 💰 Gasto Tracker
 
 Una aplicación web moderna y elegante para el seguimiento de gastos personales, desarrollada con Flask y MongoDB.
 
@@ -81,7 +81,8 @@ gasto-track-api/
 │   │   ├── filtros.py            # Servicios de filtrado
 │   │   └── presupuestos.py       # Servicios de presupuesto
 │   ├── static/
-│   │   └── custom.css            # Estilos personalizados
+│   │   ├── custom.css            # Estilos personalizados
+│   │   └── main.js               # JavaScript principal
 │   ├── templates/
 │   │   └── index.html            # Plantilla principal
 │   └── __init__.py               # Factory de la aplicación
@@ -95,10 +96,30 @@ gasto-track-api/
 ## 🛠️ Tecnologías
 
 - **Backend**: Flask 3.1+, PyMongo
-- **Frontend**: Bootstrap 5, Chart.js, Jinja2
+- **Frontend**: Bootstrap 5, Chart.js, Jinja2, JavaScript modular
 - **Base de datos**: MongoDB
 - **Estilos**: CSS customizado con gradientes modernos
 - **Configuración**: python-dotenv
+
+## 🏗️ Arquitectura Frontend
+
+### Separación de responsabilidades
+- **HTML**: Estructura semántica en `app/templates/index.html`
+- **CSS**: Estilos modulares en `app/static/custom.css`
+- **JavaScript**: Lógica funcional en `app/static/main.js`
+
+### Características del JavaScript
+- ✅ **Modular**: Funciones organizadas por responsabilidad
+- ✅ **Documentado**: JSDoc en todas las funciones
+- ✅ **Manejo de errores**: Validaciones y logs de console
+- ✅ **Event-driven**: Listeners configurados automáticamente
+- ✅ **Reutilizable**: Funciones exportadas al scope global
+
+### Funciones principales
+- `initializeChart()`: Configuración de Chart.js
+- `aplicarFiltros()`: Filtrado de tabla en tiempo real
+- `editarGasto()`: Modal de edición con prefill
+- `setupFormEnhancements()`: Mejoras visuales de formularios
 
 ## 📋 Uso
 
@@ -164,6 +185,14 @@ SECRET_KEY=your-secret-key-here
 3. Define las rutas en `app/rutas/`
 4. Actualiza las plantillas si es necesario
 
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu característica (`git checkout -b feature/nueva-caracteristica`)
+3. Commit tus cambios (`git commit -am 'Agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Abre un Pull Request
+
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para detalles.
@@ -172,3 +201,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 **lucadelavia**
 - GitHub: [@lucadelavia](https://github.com/lucadelavia)
+
+---
+
+⭐ Si este proyecto te resulta útil, ¡dale una estrella en GitHub!
