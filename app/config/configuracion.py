@@ -4,6 +4,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+
+    puerto = int(os.getenv('PORT', 5000))
+    
+    debug_mode = os.getenv('DEBUG', 'True').lower() == 'true'
+
     SECRET_KEY = os.getenv('SECRET_KEY', 'revenge332025')
     
     DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
@@ -30,7 +35,6 @@ class Config:
         "Otros"
     ]
     
-    # === MÉTODOS ÚTILES ===
     @staticmethod
     def init_app(app):
         """

@@ -1,6 +1,6 @@
 from datetime import datetime
 from bson import ObjectId
-from app.configuracion import Config
+from ..config.configuracion import Config
 
 class Gasto:
     
@@ -9,7 +9,7 @@ class Gasto:
         self.monto = monto
         self.categoria = categoria
         self.fecha = fecha if fecha else datetime.now().strftime('%d-%m-%Y')
-        self.fecha_creacion = datetime.now()
+        self.fecha_creacion = datetime.now() 
         self.fecha_actualizacion = datetime.now()
     
     def to_dict(self):
