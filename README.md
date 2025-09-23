@@ -185,23 +185,7 @@ SECRET_KEY=your-secret-key-here
 3. Define las rutas en `app/rutas/`
 4. Actualiza las plantillas si es necesario
 
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu característica (`git checkout -b feature/nueva-caracteristica`)
-3. Commit tus cambios (`git commit -am 'Agregar nueva característica'`)
-4. Push a la rama (`git push origin feature/nueva-caracteristica`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para detalles.
-
 ## 👨‍💻 Autor
 
 **lucadelavia**
 - GitHub: [@lucadelavia](https://github.com/lucadelavia)
-
----
-
-⭐ Si este proyecto te resulta útil, ¡dale una estrella en GitHub!
