@@ -1,5 +1,3 @@
-# 🔧 Implementación de Filtros Avanzados
-
 from datetime import datetime, timedelta
 from flask import request, jsonify
 from app.config.base_datos import obtener_db
@@ -21,7 +19,6 @@ class FiltroService:
         db = obtener_db()
         query = {}
         
-        # Filtro por rango de fechas
         if filtros.get('fecha_inicio') or filtros.get('fecha_fin'):
             fecha_query = {}
             if filtros.get('fecha_inicio'):
@@ -30,15 +27,12 @@ class FiltroService:
                 fecha_query['$lte'] = filtros['fecha_fin']
             query['fecha'] = fecha_query
         
-        # Filtro por categorías (múltiples)
         if filtros.get('categorias') and len(filtros['categorias']) > 0:
             query['categoria'] = {'$in': filtros['categorias']}
         
-        # Filtro por origen
         if filtros.get('origen'):
             query['origen'] = filtros['origen']
-        
-        # Filtro por rango de montos
+
         if filtros.get('monto_min') or filtros.get('monto_max'):
             monto_query = {}
             if filtros.get('monto_min'):
@@ -47,17 +41,14 @@ class FiltroService:
                 monto_query['$lte'] = float(filtros['monto_max'])
             query['monto'] = monto_query
         
-        # Búsqueda en descripción (insensible a mayúsculas)
         if filtros.get('busqueda'):
             query['descripcion'] = {
                 '$regex': re.escape(filtros['busqueda']),
                 '$options': 'i'
             }
         
-        # Ejecutar consulta
         gastos = list(db.gastos.find(query).sort('fecha', -1))
         
-        # Convertir ObjectId a string para JSON
         for gasto in gastos:
             gasto['id'] = str(gasto['_id'])
             del gasto['_id']
@@ -80,7 +71,6 @@ class FiltroService:
         cantidad = len(gastos_filtrados)
         promedio = total / cantidad if cantidad > 0 else 0
         
-        # Agrupación por categoría
         categorias = {}
         for gasto in gastos_filtrados:
             cat = gasto['categoria']
@@ -91,7 +81,6 @@ class FiltroService:
             for cat, total in sorted(categorias.items(), key=lambda x: x[1], reverse=True)
         ]
         
-        # Agrupación por origen
         origenes = {}
         for gasto in gastos_filtrados:
             orig = gasto['origen']
@@ -143,7 +132,6 @@ class FiltroService:
             }
         }
 
-# Endpoint para la API
 def agregar_endpoints_filtros(app):
     @app.route('/api/gastos/filtrar', methods=['POST'])
     def filtrar_gastos_api():
